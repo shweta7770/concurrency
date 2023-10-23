@@ -37,7 +37,16 @@ function App() {
     normalCurrency: '',
     reinstatementType: 'Manual',
     noofRevolvements: '',
-    maxDrawingAmount: ''
+    maxDrawingAmount: '',
+    creditAvailable: '',
+    creditAvailableWith: '',
+    additionalDetailCreditAvailableWith: '',
+    creditAvailableBy: 'acceptance',
+    deferredPaymentDetails: '',
+    tenorPeriodDays: '',
+    tenorIndicator: '',
+    drawee: '',
+    confirmationOfCredit49:''
   })
 
   // errors
@@ -60,10 +69,18 @@ function App() {
     normalCurrency: '',
     reinstatementType: '',
     noofRevolvements: '',
-    maxDrawingAmount: ''
+    maxDrawingAmount: '',
+    creditAvailableWith: '',
+    additionalDetailCreditAvailableWith: '',
+    creditAvailableBy: '',
+    deferredPaymentDetails: '',
+    tenorPeriodDays: '',
+    tenorIndicator: '',
+    drawee: '',
+    confirmationOfCredit49:''
   })
 
-//useeffect for for particular change
+  //useeffect for for particular change
 
   useEffect(() => {
 
@@ -84,6 +101,9 @@ function App() {
         ...prev, ['delivaryVai']: 'swift'
       }))
 
+      setLCInfo((prev) => ({
+        ...prev, ['creditAvailableWith']: 'AnyBank'
+      }))
     }
     else if (LCInfo.lcCategory === 'Domestic') {
 
@@ -96,6 +116,10 @@ function App() {
       setLCInfo((prev) => ({
         ...prev, ['delivaryVai']: 'SFMS'
       }))
+      setLCInfo((prev) => ({
+        ...prev, ['creditAvailableWith']: 'AxisBank'
+      }))
+
     }
     else if (LCInfo.lcCategory === '') {
 
@@ -107,28 +131,92 @@ function App() {
       setLCInfo((prev) => ({
         ...prev, ['delivaryVai']: ''
       }))
+
+      setLCInfo((prev) => ({
+        ...prev, ['creditAvailableWith']: ''
+      }))
+
     }
 
   }, [LCInfo.lcCategory])
 
-  useEffect(()=>{
-      setLCInfo((prev)=>({
-         ...prev ,['normalCurrency']: LCInfo?.currency32B,
-         ['maxDrawingCurrency'] : LCInfo?.currency32B
+  useEffect(() => {
+    setLCInfo((prev) => ({
+      ...prev, ['normalCurrency']: LCInfo?.currency32B,
+      ['maxDrawingCurrency']: LCInfo?.currency32B
+    }))
+    if (LCInfo?.normalCurrency) {
+      console.log("kgjgj");
+      setLCInfoError((prev) => ({
+        ...prev, ['normalCurrency']: ''
       }))
-  },[LCInfo?.currency32B])
 
-  useEffect(()=>{
-    let amount=LCInfo?.additionalAmount ;
-   let result= amount?.match(/^[a-zA-Z0-9]+$/)
-    if(result === null)
-    {
-      setLCInfoError((prev)=>({
-        ...prev , ['additionalAmount']:''
+    }
+    if (LCInfo?.maxDrawingCurrency) {
+      setLCInfoError((prev) => ({
+        ...prev, ['maxDrawingCurrency']: ''
+      }))
+
+    }
+
+  }, [LCInfo?.currency32B])
+
+
+
+  // Additional Amount validation
+  const validateAdditionalAmount = (e) => {
+    let amount = e.target.value;
+    let result = amount?.match(/^[a-zA-Z0-9]+$/)
+    if (result === null) {
+      setLCInfoError((prev) => ({
+        ...prev, ['additionalAmount']: 'Please enter amount alphaNumaric'
       }))
     }
-  },[LCInfo?.additionalAmount])
+    else {
+      setLCInfoError((prev) => ({
+        ...prev, ['additionalAmount']: ''
+      }))
+      handleChange(e)
+    }
+  }
 
+  // validation for number
+  const validateForNumber = (e) => {
+    let value = e.target.value;
+    let regex = /^[0-9]+$/
+    let result = value.match(regex)
+
+    if (result === null) {
+      setLCInfoError((prev) => ({
+        ...prev, [e.target.name]: 'Please enter numaric'
+      }))
+    }
+    else {
+      setLCInfoError((prev) => ({
+        ...prev, [e.target.name]: ''
+      }))
+      handleChange(e)
+    }
+  }
+
+  // validate tenor Period Days
+  const validateTenorPeriodDays = (e) => {
+    let value = e.target.value;
+    let regex = /^[0-9]+$/
+    let result = value.match(regex)
+
+    if (result === null) {
+      setLCInfoError((prev) => ({
+        ...prev, [e.target.name]: 'Please enter days up to 3 digits'
+      }))
+    }
+    else {
+      setLCInfoError((prev) => ({
+        ...prev, [e.target.name]: ''
+      }))
+      handleChange(e)
+    }
+  }
 
   const handleChange = (e) => {
     setLCInfo({ ...LCInfo, [e.target.name]: e.target.value })
@@ -365,13 +453,83 @@ function App() {
 
     }
     handleMaxDrawingCurrency();
+    //validation for Credit Available With 
+    const handleCreditAvailableWith = () => {
+      if (!LCInfo?.creditAvailableWith) {
+        setLCInfoError((prev) => ({
+          ...prev, ['creditAvailableWith']: "Please select Credit Available With."
+        }))
+      }
+    }
+    handleCreditAvailableWith()
 
+    // validation for Credit Available By
+    const handleCreditAvailableBy = () => {
+      if (!LCInfo?.creditAvailableBy) {
+        setLCInfoError((prev) => ({
+          ...prev, ['creditAvailableBy']: "Please select Credit Available By."
+        }))
+      }
+    }
+    handleCreditAvailableBy()
+
+    // validation for Credit Available By
+    const handleAdditionalDetailforCreditAvailableWith = () => {
+      if (!LCInfo?.additionalDetailCreditAvailableWith && LCInfo?.creditAvailableWith === "OtherBank") {
+        setLCInfoError((prev) => ({
+          ...prev, ['additionalDetailCreditAvailableWith']: "Please select additional Detail CreditAvailable With."
+        }))
+      }
+    }
+    handleAdditionalDetailforCreditAvailableWith()
+
+    // validation for Deferred Payment Details
+    const handleDeferredPaymentDetails = () => {
+      if (!LCInfo?.deferredPaymentDetails && LCInfo?.creditAvailableBy === "deferredPayment") {
+        setLCInfoError((prev) => ({
+          ...prev, ['deferredPaymentDetails']: "Please select deferred Payment Details."
+        }))
+      }
+    }
+    handleDeferredPaymentDetails()
+
+    // validation for Tenor Period
+    const handleTenorPeriod = () => {
+      if ((!LCInfo?.tenorPeriodDays && LCInfo?.creditAvailableBy !== "deferredPayment") ||
+        (!LCInfo?.tenorPeriodDays && LCInfo?.creditAvailableBy !== "mixedPayment")
+      ) {
+        setLCInfoError((prev) => ({
+          ...prev, ['tenorPeriodDays']: "Please select tenor Period Days."
+        }))
+      }
+    }
+    handleTenorPeriod()
+
+    // validation for Tenor Indicator
+    const handleTenorIndicator = () => {
+      if ((!LCInfo?.tenorIndicator && LCInfo?.creditAvailableBy !== "deferredPayment") ||
+        (!LCInfo?.tenorIndicator && LCInfo?.creditAvailableBy !== "mixedPayment")
+      ) {
+        setLCInfoError((prev) => ({
+          ...prev, ['tenorIndicator']: "Please select tenor Indicator."
+        }))
+      }
+    }
+    handleTenorIndicator()
+
+    const handleDrawee = () => {
+      if ((LCInfo?.creditAvailableBy === 'acceptance' || LCInfo?.creditAvailableBy === 'negotiation' ||
+        LCInfo?.creditAvailableBy === 'payment' || LCInfo?.creditAvailableBy === 'mixedPayment') && LCInfo?.drawee === '') {
+        setLCInfoError((prev) => ({
+          ...prev, ['drawee']: "Please select drawee."
+        }))
+      }
+    }
+    handleDrawee()
 
   }
-  
 
-  console.log(LCInfo, "LCdetails");
-  
+
   return (
     <div className="App">
       <h1>LC Information</h1>
@@ -519,7 +677,7 @@ function App() {
           {/* Amount(32B) */}
           <div className='div'>
             <lable>Amount(32B) *</lable>
-            <input type="text" name='amount' onChange={(e) => { handleChange(e) }} />
+            <input type="text" name='amount' maxLength={10} onChange={(e) => { validateForNumber(e) }} />
             <div className='error'>
               <lable>{LCInfoError?.amount && LCInfoError?.amount}</lable>
             </div>
@@ -537,8 +695,9 @@ function App() {
           {/*Additional Amount(39C) */}
           <div className='div'>
             <lable> Additional Amount(39C)</lable>
-            <input type="text" name='additionalAmount' onChange={(e) => { handleChange(e)
-         }} />
+            <input type="text" name='additionalAmount' maxLength={144} onChange={(e) => {
+              validateAdditionalAmount(e);
+            }} />
             <div className='error'>
               <lable>{LCInfoError?.additionalAmount && LCInfoError?.additionalAmount}</lable>
             </div>
@@ -549,18 +708,18 @@ function App() {
             <lable>Red clause</lable>
             <select name='redclause' onChange={(e) => { handleChange(e) }} >
               <option value="NO"> NO</option>
-              <option value="YEs">Yes</option>
+              <option value="YES">Yes</option>
             </select>
             <div className='error'>
               <lable>{LCInfoError?.redclause && LCInfoError?.redclause}</lable>
             </div>
           </div>
 
-          {LCInfo?.resolving === 'YES' && (<>
+          {LCInfo?.redclause === 'YES' && (<>
             {/*Advance Amount */}
             <div className='div'>
               <lable> Advance Amount </lable>
-              <input type="text" name='advanceAmount' onChange={(e) => { handleChange(e) }} />
+              <input type="text" name='advanceAmount' onChange={(e) => { validateForNumber(e) }} />
               <div className='error'>
                 <lable>{LCInfoError?.advanceAmount && LCInfoError?.advanceAmount}</lable>
               </div>
@@ -571,9 +730,9 @@ function App() {
           {/* Currency */}
           <div className='div'>
             <lable>Currency</lable>
-            <select name='normalCurrency' 
-            value={LCInfo?.normalCurrency}
-            onChange={(e) => { handleChange(e) }} >
+            <select name='normalCurrency'
+              value={LCInfo?.normalCurrency}
+              onChange={(e) => { handleChange(e) }} >
               <option value=""> </option>
               <option value='INR'>INR</option>
               <option value='Doller'>Doller</option>
@@ -609,7 +768,7 @@ function App() {
               {/*Max Drawing Amount*/}
               <div className='div'>
                 <lable> Max Drawing Amount </lable>
-                <input type="text" name='maxDrawingAmount' onChange={(e) => { handleChange(e) }} />
+                <input type="text" name='maxDrawingAmount' onChange={(e) => { validateForNumber(e) }} />
                 <div className='error'>
                   <lable>{LCInfoError?.maxDrawingAmount && LCInfoError?.maxDrawingAmount}</lable>
                 </div>
@@ -617,9 +776,9 @@ function App() {
               {/* Max Drawing Currency */}
               <div className='div'>
                 <lable>Max Drawing Currency</lable>
-                <select name='maxDrawingCurrency' 
-                value={LCInfo?.maxDrawingCurrency}
-                onChange={(e) => { handleChange(e) }}>
+                <select name='maxDrawingCurrency'
+                  value={LCInfo?.maxDrawingCurrency}
+                  onChange={(e) => { handleChange(e) }}>
                   <option value=""> </option>
                   <option value='INR'>INR</option>
                   <option value='Doller'>Doller</option>
@@ -635,6 +794,142 @@ function App() {
 
         </div>
 
+
+        {/*--------- Credit Availability Details Container--------------------------------------------------------*/}
+        <div className='CreditAvailabilityDetailsContainer'>
+          <h4>Credit Availability Details</h4>
+          {/* Credit Available With (41A)  */}
+          <div className='div'>
+            <lable>Credit Available With (41A)* </lable>
+            <select name='creditAvailableWith' onChange={(e) => { handleChange(e) }} value={LCInfo?.creditAvailableWith}>
+              <option value=""></option>
+              <option value="AdvisingBank">Advising Bank</option>
+              <option value='AnyBank'>Any Bank</option>
+              <option value='AxisBank'>Axis Bank</option>
+              <option value='OtherBank'>Other Bank</option>
+            </select>
+            <div className='error'>
+              <lable>{LCInfoError?.creditAvailableWith && LCInfoError?.creditAvailableWith}</lable>
+            </div>
+          </div>
+
+          {LCInfo?.creditAvailableWith === 'OtherBank' && (
+            <>
+              {/* Additional detail for Credit Available With (41A) */}
+              <div className='div'>
+                <lable>Additional detail for Credit Available With (42c)*</lable>
+                <input type="text" name='additionalDetailCreditAvailableWith' onChange={(e) => { handleChange(e) }} />
+                <div className='error'>
+                  {LCInfoError?.additionalDetailCreditAvailableWith && LCInfoError?.additionalDetailCreditAvailableWith}
+                </div>
+              </div>
+            </>
+          )}
+
+
+          {/* Credit Available By (41A)  */}
+          <div className='div'>
+            <lable>Credit Available By (41A) * </lable>
+            <select name='creditAvailableBy' onChange={(e) => { handleChange(e) }}>
+              <option value="acceptance">Acceptance</option>
+              <option value='deferredPayment'>Deferred Payment</option>
+              <option value='mixedPayment'>Mixed Payment</option>
+              <option value='negotiation'>Negotiation</option>
+              <option value='payment'>Payment</option>
+            </select>
+            <div className='error'>
+              <lable>{LCInfoError?.creditAvailableBy && LCInfoError?.creditAvailableBy} </lable>
+            </div>
+          </div>
+
+          {LCInfo?.creditAvailableBy === 'deferredPayment' && (<>
+            {/* Deferred Payment Details (42P) */}
+            <div className='div'>
+              <lable>Deferred Payment Details (42P)</lable>
+              <input type="text" name='deferredPaymentDetails' onChange={(e) => { handleChange(e) }} />
+              <div className='error'>
+                <lable>{LCInfoError?.deferredPaymentDetails && LCInfoError?.deferredPaymentDetails}</lable>
+              </div>
+            </div>
+          </>)}
+
+          {(LCInfo?.creditAvailableBy !== 'deferredPayment' && LCInfo?.creditAvailableBy !== 'mixedPayment') && (<>
+            {/* Tenor Period Days (42C) */}
+            <div className='div'>
+              <lable>Tenor Period Days (42C)</lable>
+              <input type="text" name='tenorPeriodDays'
+                maxLength={3}
+                onChange={(e) => { validateTenorPeriodDays(e) }} />
+              <div className='error'>
+                <lable>{LCInfoError?.tenorPeriodDays && LCInfoError?.tenorPeriodDays}</lable>
+              </div>
+            </div>
+            {/* Tenor Indicator (42C) */}
+            <div className='div'>
+              <lable>Tenor Indicator (42C) </lable>
+              <select name='tenorIndicator' onChange={(e) => { handleChange(e) }} >
+                <option value="afterBillOfLadingDate">After Bill of Lading Date</option>
+                <option value='At Sight'>At Sight</option>
+                <option value='billofLadingDate'>Bill of Lading Date</option>
+                <option value='fromAirwayBillDate'>From Airway Bill Date</option>
+                <option value='fromBillOfLadingDate'>From Bill of Lading Date</option>
+                <option value='fromInvoiceDate'>From Invoice Date</option>
+                <option value='fromNegotiationDate'>From Negotiation Date</option>
+                <option value='fromShipmentDate'>From Shipment Date</option>
+                <option value='others'>Others</option>
+              </select>
+              <div className='error'>
+                <lable>{LCInfoError?.tenorIndicator && LCInfoError?.tenorIndicator}</lable>
+              </div>
+            </div>
+          </>)}
+
+
+          {(LCInfo?.creditAvailableBy === 'acceptance' || LCInfo?.creditAvailableBy === 'negotiation' ||
+            LCInfo?.creditAvailableBy === 'payment' || LCInfo?.creditAvailableBy === 'mixedPayment') &&
+            (<>
+              {/* Drawee (42A)  */}
+              <div className='div'>
+                <lable>Drawee (42A)</lable>
+                <select name='drawee' onChange={(e) => handleChange(e)} >
+                  <option value=""></option>
+                  <option value="issuingBank">Issuing Bank</option>
+                  <option value='confirmingBank'>Confirming Bank</option>
+                </select>
+                <div className='error'>
+                  <lable>{LCInfoError?.drawee && LCInfoError?.drawee}</lable>
+                </div>
+              </div>
+            </>)
+          }
+
+
+          {/* Confirmation of Credit 49 */}
+          <div className='div'>
+            
+            {LCInfo?.drawee === "confirmingBank" && (<>
+              <lable>Confirmation of Credit 49 </lable>
+              <select name='confirmationOfCredit49'
+              onChange={(e) => { handleChange(e) }} >
+                <option value="yes">Yes</option>
+              </select>
+            </>)}
+            
+            {LCInfo?.drawee === "issuingBank" && (<>
+              <lable>Confirmation of Credit 49 </lable>
+              <select name='confirmationOfCredit49' 
+              value={LCInfo?.confirmationOfCredit49}
+              onChange={(e) => { handleChange(e) }} >
+              <option value='mayAdd' >May Add</option>
+              <option value='no'>No</option>
+            </select>
+            </>)}
+            <div className='error'>
+              <lable>{}</lable>
+            </div>
+          </div>
+
+        </div>
 
         {/* submit button */}
         <div className='button'><input type='submit'></input></div>
