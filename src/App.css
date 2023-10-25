@@ -42,7 +42,8 @@
   padding: 10px;
 }
 
-.LCDetailsContainer , .AmountDetailsContainer , .CreditAvailabilityDetailsContainer
+.LCDetailsContainer , .AmountDetailsContainer , .creditAvailabilityDetailsContainer, .advisingBankContainer,
+.confirmingBankDetailsContainer
 {
   border:1px solid #61dafb;
   margin: 10px;

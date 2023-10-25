@@ -46,9 +46,13 @@ function App() {
     tenorPeriodDays: '',
     tenorIndicator: '',
     drawee: '',
-    confirmationOfCredit49:''
+    confirmationOfCredit49: '',
+    additionalDetailCreditAvailableWith2: '',
+    advisingBank: '',
+    addressLine1: ''
   })
 
+  const [displayDrawee, setDisplayDrawee] = useState(true)
   // errors
   const [LCInfoError, setLCInfoError] = useState({
     LCtype: '',
@@ -77,7 +81,10 @@ function App() {
     tenorPeriodDays: '',
     tenorIndicator: '',
     drawee: '',
-    confirmationOfCredit49:''
+    confirmationOfCredit49: '',
+    additionalDetailCreditAvailableWith2: '',
+    advisingBank: '',
+    addressLine1: ''
   })
 
   //useeffect for for particular change
@@ -104,6 +111,11 @@ function App() {
       setLCInfo((prev) => ({
         ...prev, ['creditAvailableWith']: 'AnyBank'
       }))
+
+      setLCInfo((prev) => ({
+        ...prev, ['advisingBank']: 'AnyBank'
+      }))
+
     }
     else if (LCInfo.lcCategory === 'Domestic') {
 
@@ -118,6 +130,9 @@ function App() {
       }))
       setLCInfo((prev) => ({
         ...prev, ['creditAvailableWith']: 'AxisBank'
+      }))
+      setLCInfo((prev) => ({
+        ...prev, ['advisingBank']: ''
       }))
 
     }
@@ -134,6 +149,10 @@ function App() {
 
       setLCInfo((prev) => ({
         ...prev, ['creditAvailableWith']: ''
+      }))
+
+      setLCInfo((prev) => ({
+        ...prev, ['advisingBank']: 'AnyBank'
       }))
 
     }
@@ -160,6 +179,40 @@ function App() {
     }
 
   }, [LCInfo?.currency32B])
+
+  useEffect(() => {
+    if (LCInfo?.drawee === "confirmingBank") {
+      setLCInfo((prev) => ({
+        ...prev, ['confirmationOfCredit49']: 'yes'
+      }))
+    }
+    else if (LCInfo?.drawee === "issuingBank") {
+      setLCInfo((prev) => ({
+        ...prev, ['confirmationOfCredit49']: ''
+      }))
+    }
+  }, [LCInfo?.drawee])
+
+  useEffect(() => {
+    if (LCInfo?.creditAvailableBy === 'acceptance' || LCInfo?.creditAvailableBy === 'negotiation' ||
+      LCInfo?.creditAvailableBy === 'payment' || LCInfo?.creditAvailableBy === 'mixedPayment') {
+      setDisplayDrawee(true)
+    }
+    else if (LCInfo?.creditAvailableBy === "deferredPayment") {
+      setDisplayDrawee(false)
+    }
+  }, [LCInfo?.creditAvailableBy])
+
+  useEffect(() => {
+    if (LCInfo?.tenorIndicator === "At Sight") {
+      setLCInfo((prev) => ({
+        ...prev, ['tenorPeriodDays']: ''
+      }))
+      setLCInfoError((prev)=>({
+        ...prev , ['tenorPeriodDays'] :''
+      }))
+    }
+  }, [LCInfo?.tenorIndicator])
 
 
 
@@ -473,7 +526,7 @@ function App() {
     }
     handleCreditAvailableBy()
 
-    // validation for Credit Available By
+    // validation for Additional Credit Available By
     const handleAdditionalDetailforCreditAvailableWith = () => {
       if (!LCInfo?.additionalDetailCreditAvailableWith && LCInfo?.creditAvailableWith === "OtherBank") {
         setLCInfoError((prev) => ({
@@ -502,6 +555,12 @@ function App() {
           ...prev, ['tenorPeriodDays']: "Please select tenor Period Days."
         }))
       }
+      if(LCInfo?.tenorIndicator=== 'At Sight')
+      {
+        setLCInfoError((prev) => ({
+          ...prev, ['tenorPeriodDays']: ""
+        }))
+      }
     }
     handleTenorPeriod()
 
@@ -526,6 +585,37 @@ function App() {
       }
     }
     handleDrawee()
+
+    // validation for Additional Credit Available  for Tennore Indicator
+    const handleAdditionalDetailforTenorIndicator = () => {
+      if (!LCInfo?.additionalDetailCreditAvailableWith2 && LCInfo?.tenorIndicator === "others") {
+        setLCInfoError((prev) => ({
+          ...prev, ['additionalDetailCreditAvailableWith2']: "Please select additional Detail CreditAvailable With."
+        }))
+      }
+    }
+    handleAdditionalDetailforTenorIndicator()
+
+    // validation for Advicing Bank 
+    const handleAdvicingBank = () => {
+      if (!LCInfo?.advisingBank) {
+        setLCInfoError((prev) => ({
+          ...prev, ['advisingBank']: "Please select advicing bank."
+        }))
+      }
+    }
+    handleAdvicingBank()
+
+    //  validation Advicing Bank  Address
+    const handleAddressLine1 = () => {
+      if (!LCInfo?.addressLine1) {
+        setLCInfoError((prev) => ({
+          ...prev, ['addressLine1']: "Please select address Line1 ."
+        }))
+      }
+    }
+    handleAddressLine1()
+
 
   }
 
@@ -796,7 +886,7 @@ function App() {
 
 
         {/*--------- Credit Availability Details Container--------------------------------------------------------*/}
-        <div className='CreditAvailabilityDetailsContainer'>
+        <div className='creditAvailabilityDetailsContainer'>
           <h4>Credit Availability Details</h4>
           {/* Credit Available With (41A)  */}
           <div className='div'>
@@ -813,11 +903,11 @@ function App() {
             </div>
           </div>
 
+          {/* Additional detail for Credit Available With (41A) */}
           {LCInfo?.creditAvailableWith === 'OtherBank' && (
             <>
-              {/* Additional detail for Credit Available With (41A) */}
               <div className='div'>
-                <lable>Additional detail for Credit Available With (42c)*</lable>
+                <lable>Additional detail for Credit Available With (41A)*</lable>
                 <input type="text" name='additionalDetailCreditAvailableWith' onChange={(e) => { handleChange(e) }} />
                 <div className='error'>
                   {LCInfoError?.additionalDetailCreditAvailableWith && LCInfoError?.additionalDetailCreditAvailableWith}
@@ -842,8 +932,9 @@ function App() {
             </div>
           </div>
 
+          {/* Deferred Payment Details (42P) */}
           {LCInfo?.creditAvailableBy === 'deferredPayment' && (<>
-            {/* Deferred Payment Details (42P) */}
+
             <div className='div'>
               <lable>Deferred Payment Details (42P)</lable>
               <input type="text" name='deferredPaymentDetails' onChange={(e) => { handleChange(e) }} />
@@ -853,13 +944,17 @@ function App() {
             </div>
           </>)}
 
+          {/* Tenor Period Days (42C) */}
           {(LCInfo?.creditAvailableBy !== 'deferredPayment' && LCInfo?.creditAvailableBy !== 'mixedPayment') && (<>
-            {/* Tenor Period Days (42C) */}
+
             <div className='div'>
               <lable>Tenor Period Days (42C)</lable>
               <input type="text" name='tenorPeriodDays'
                 maxLength={3}
-                onChange={(e) => { validateTenorPeriodDays(e) }} />
+                onChange={(e) => { validateTenorPeriodDays(e) }}
+                value={LCInfo?.tenorPeriodDays}
+                disabled={LCInfo?.tenorIndicator === 'At Sight'}
+              />
               <div className='error'>
                 <lable>{LCInfoError?.tenorPeriodDays && LCInfoError?.tenorPeriodDays}</lable>
               </div>
@@ -884,11 +979,10 @@ function App() {
             </div>
           </>)}
 
-
-          {(LCInfo?.creditAvailableBy === 'acceptance' || LCInfo?.creditAvailableBy === 'negotiation' ||
-            LCInfo?.creditAvailableBy === 'payment' || LCInfo?.creditAvailableBy === 'mixedPayment') &&
+          {/* Drawee (42A)  */}
+          {displayDrawee &&
             (<>
-              {/* Drawee (42A)  */}
+
               <div className='div'>
                 <lable>Drawee (42A)</lable>
                 <select name='drawee' onChange={(e) => handleChange(e)} >
@@ -902,33 +996,158 @@ function App() {
               </div>
             </>)
           }
-
-
           {/* Confirmation of Credit 49 */}
           <div className='div'>
-            
-            {LCInfo?.drawee === "confirmingBank" && (<>
+            {(LCInfo?.drawee === "confirmingBank" && displayDrawee) && (<>
               <lable>Confirmation of Credit 49 </lable>
               <select name='confirmationOfCredit49'
-              onChange={(e) => { handleChange(e) }} >
+                onChange={(e) => { handleChange(e) }}
+                value={LCInfo?.confirmationOfCredit49}
+              >
                 <option value="yes">Yes</option>
               </select>
             </>)}
-            
-            {LCInfo?.drawee === "issuingBank" && (<>
+
+            {(LCInfo?.drawee === "issuingBank" && displayDrawee) && (<>
               <lable>Confirmation of Credit 49 </lable>
-              <select name='confirmationOfCredit49' 
-              value={LCInfo?.confirmationOfCredit49}
-              onChange={(e) => { handleChange(e) }} >
-              <option value='mayAdd' >May Add</option>
-              <option value='no'>No</option>
-            </select>
+              <select name='confirmationOfCredit49'
+                value={LCInfo?.confirmationOfCredit49}
+                onChange={(e) => { handleChange(e) }} >
+                <option value='mayAdd' >May Add</option>
+                <option value='no'>No</option>
+              </select>
             </>)}
             <div className='error'>
-              <lable>{}</lable>
+              <lable>{ }</lable>
+            </div>
+          </div>
+          {/* Additional detail for Credit Available With (42c) */}
+          {LCInfo?.tenorIndicator === "others" && (
+            <>
+              <div className='div'>
+                <lable>Additional detail for Credit Available With (42c)*</lable>
+                <input type="text" name='additionalDetailCreditAvailableWith2' onChange={(e) => { handleChange(e) }} />
+                <div className='error'>
+                  {LCInfoError?.additionalDetailCreditAvailableWith2 && LCInfoError?.additionalDetailCreditAvailableWith2}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+
+        {/*--------- Advising Bank Container--------------------------------------------------------*/}
+        <div className='advisingBankContainer'>
+          <h4>Advising Bank*</h4>
+          <div>
+            <select name='advisingBank' onChange={(e) => { handleChange(e) }} value={LCInfo?.advisingBank}>
+              <option value=""></option>
+              <option value="SpecificBank">Specific Bank</option>
+              <option value='AnyBank'>Any Bank</option>
+            </select>
+            <div className='error'>
+              <lable>{LCInfoError?.advisingBank && LCInfoError?.advisingBank}</lable>
             </div>
           </div>
 
+          {/* Branch */}
+          <div className='div'>
+            <lable>Branch</lable>
+            <input type="text" name='' onChange={(e) => { handleChange(e) }} />
+            <div className='error'>
+              { }
+            </div>
+          </div>
+
+
+          {/*Address Line-1 (Mandatory) */}
+          <div className='div'>
+            <lable>Address Line-1*</lable>
+            <input type="text" name='addressLine1' onChange={(e) => { handleChange(e) }} />
+            <div className='error'>
+              {LCInfoError?.addressLine1 && LCInfoError?.addressLine1}
+            </div>
+          </div>
+
+          {/*Address Line-2 */}
+          <div className='div'>
+            <lable>Address Line-2</lable>
+            <input type="text" name='' onChange={(e) => { handleChange(e) }} />
+            <div className='error'>
+              { }
+            </div>
+          </div>
+
+          {/* Country */}
+          <div className='div'>
+            <lable> Country</lable>
+            <input type="text" name='' onChange={(e) => { handleChange(e) }} />
+            <div className='error'>
+              { }
+            </div>
+          </div>
+
+          {/* State */}
+          <div className='div'>
+            <lable> State</lable>
+            <input type="text" name='' onChange={(e) => { handleChange(e) }} />
+            <div className='error'>
+              { }
+            </div>
+          </div>
+
+          {/*  City */}
+          <div className='div'>
+            <lable>  City</lable>
+            <input type="text" name='' onChange={(e) => { handleChange(e) }} />
+            <div className='error'>
+              { }
+            </div>
+          </div>
+
+          {/*  PIN Code */}
+          <div className='div'>
+            <lable>  PIN Code</lable>
+            <input type="text" name='' onChange={(e) => { handleChange(e) }} />
+            <div className='error'>
+              { }
+            </div>
+          </div>
+        </div>
+
+
+        {/*--------- Confirming Bank Details Container--------------------------------------------------------*/}
+        <div className='confirmingBankDetailsContainer'>
+          <h4>Confirming Bank Details  *</h4>
+            {/* Confirmation Charges Borne By */}
+            <div className='div'>
+              <lable>Confirmation Charges Borne By </lable>
+              <select name=''
+                onChange={(e) => { handleChange(e) }}
+              // value={}
+              >
+                <option value="applicant">Applicant</option>
+                <option value="Beneficiary">Beneficiary</option>
+              </select>
+              <div className='error'>
+              { }
+            </div>
+            </div>
+           {/* Confirmation of Credit (49) */}
+           <div>
+           <lable>Confirmation of Credit (49) </lable>
+            <select>
+              <option>NO</option>
+              <option>YES</option>
+              <option>May Add</option>
+            </select>
+           </div>
+        
+        </div>
+
+        {/*---------Advised through Bank Details  Container--------------------------------------------------------*/}
+        <div className='AdvisedTthroughBankDetailsContainer'>
+          <h4>Advised through Bank Details *</h4>
         </div>
 
         {/* submit button */}
